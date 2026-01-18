@@ -145,15 +145,181 @@ Before asking for testing:
 - [ ] Error handling is implemented
 - [ ] Code is DRY (Don't Repeat Yourself)
 
-## Version Control Notes
+## Version Control & Git Commands
 
-Key files to preserve:
+### Key Files to Preserve
 - `project.godot` - never delete, always merge carefully
 - `scripts/` - all GDScript files
 - `scenes/` - all scene files
 - `.aiagent/` - agent documentation
 
-Files that can be regenerated:
+### Files That Can Be Regenerated
 - Build outputs
 - Cache files
 - Temporary exports
+
+### Allowed Git Commands
+
+#### Basic Operations
+```bash
+# Initialize repository (already done)
+git init
+
+# Check status
+git status
+
+# View commit history
+git log
+git log --oneline
+git log --graph --all --decorate
+
+# View differences
+git diff
+git diff <filename>
+```
+
+#### Staging & Committing
+```bash
+# Stage specific file
+git add <filename>
+
+# Stage all changes
+git add .
+
+# Stage changes interactively
+git add -p
+
+# Commit with message
+git commit -m "descriptive message"
+
+# Amend last commit
+git commit --amend
+
+# View what will be committed
+git diff --staged
+```
+
+#### Branches
+```bash
+# Create new branch
+git branch <branch-name>
+
+# List branches
+git branch
+git branch -a
+
+# Switch branch
+git checkout <branch-name>
+
+# Create and switch to new branch
+git checkout -b <branch-name>
+
+# Delete branch (local)
+git branch -d <branch-name>
+
+# Delete branch (force)
+git branch -D <branch-name>
+```
+
+#### Undoing Changes
+```bash
+# Discard changes in working directory
+git checkout -- <filename>
+
+# Unstage file
+git reset <filename>
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Undo last commit (discard changes)
+git reset --hard HEAD~1
+```
+
+#### Information
+```bash
+# Show commit details
+git show <commit-hash>
+
+# Show file history
+git log -- <filename>
+
+# Show who changed each line
+git blame <filename>
+```
+
+### Commit Message Guidelines
+
+Use clear, descriptive commit messages following this format:
+```
+<type>: <brief description>
+
+<optional longer explanation>
+```
+
+**Types:**
+- `feat:` - New feature or system
+- `fix:` - Bug fix
+- `refactor:` - Code restructuring without behavior change
+- `docs:` - Documentation updates
+- `test:` - Adding/updating tests
+- `config:` - Project configuration changes
+
+**Examples:**
+```
+feat: Add enemy spawning system
+fix: Correct bullet collision detection with enemies
+docs: Update context.md with new collision system
+config: Add input actions for game controls
+refactor: Simplify player movement logic
+```
+
+### Branching Strategy
+
+**Recommended branches:**
+- `main` - Stable, tested code (don't commit directly)
+- `develop` - Integration branch for features
+- `feature/*` - Individual features (e.g., `feature/bullet-system`)
+- `bugfix/*` - Bug fixes (e.g., `bugfix/collision-issue`)
+
+**Workflow:**
+1. Create feature branch: `git checkout -b feature/my-feature`
+2. Make changes and commit regularly
+3. Merge back to develop when complete
+4. Test thoroughly before merging to main
+
+### Git Workflow Example
+
+```bash
+# Create feature branch
+git checkout -b feature/enemy-ai
+
+# Make changes
+# ... edit files ...
+
+# Stage and commit
+git add .
+git commit -m "feat: Implement basic enemy pathfinding"
+
+# Make more changes
+# ... edit files ...
+
+# Commit again
+git add scripts/enemy.gd
+git commit -m "feat: Add enemy patrol behavior"
+
+# View your commits
+git log --oneline -5
+
+# Switch back to main when done
+git checkout main
+```
+
+### Important Git Notes
+
+- **Never force push** to main or shared branches
+- **Always test** before committing
+- **Small commits** are better than large ones
+- **Write descriptive messages** for future reference
+- **Commit regularly** to avoid losing work
+- **Pull before pushing** to avoid conflicts
