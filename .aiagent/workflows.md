@@ -326,3 +326,285 @@ See CHECKLIST_ANDROID.md for detailed Android setup.
    - Note any issues found
    - Plan fixes for next iteration
    - Update context.md with release notes
+
+---
+
+## Autonomous Development Loop
+
+This workflow enables AI agents to work independently while maintaining quality and knowing when to ask for help.
+
+### Pre-Work Checklist (ALWAYS run first)
+
+Before starting any development task, complete these checks:
+
+**1. Git Status Check**
+```bash
+git status
+git diff --stat
+```
+- Ensure working directory is clean or changes are intentional
+- Note any uncommitted work from previous sessions
+- If dirty, either commit or stash before proceeding
+
+**2. Project Validation**
+```bash
+cd ~/dev/spooky && godot --headless --validate-project
+```
+- Must pass before starting new work
+- If fails, fix validation errors first
+
+**3. Run Existing Tests**
+```bash
+cd ~/dev/spooky && godot --headless -s addons/gut/gut_cmdln.gd
+```
+- All tests must pass before new development
+- If tests fail, fix them before proceeding
+
+### Development Cycle
+
+#### Step 1: Plan
+- Review task requirements
+- Identify files to modify
+- Plan test cases for new functionality
+- Break complex tasks into smaller steps
+
+#### Step 2: Write Tests First (TDD)
+- Create test file in `tests/unit/` or `tests/integration/`
+- Write failing tests for expected behavior
+- Follow GUT naming convention: `test_<feature>.gd`
+
+Example test structure:
+```gdscript
+extends GutTest
+
+func before_each():
+    # Setup before each test
+    pass
+
+func after_each():
+    # Cleanup after each test
+    pass
+
+func test_example_behavior():
+    # Arrange
+    var subject = preload("res://scripts/player.gd").new()
+
+    # Act
+    var result = subject.some_method()
+
+    # Assert
+    assert_eq(result, expected_value, "Description of what should happen")
+```
+
+#### Step 3: Implement
+- Write minimal code to pass tests
+- Follow code style in instructions.md
+- Keep changes focused and minimal
+
+#### Step 4: Test Loop (Max 3 Iterations)
+
+```
+FOR attempt = 1 TO 3:
+    1. Run tests: godot --headless -s addons/gut/gut_cmdln.gd
+    2. IF all pass → CONTINUE to Step 5
+    3. IF fail:
+       - Analyze failure message
+       - Fix implementation OR fix test if test was wrong
+       - Log what was tried
+    4. IF attempt == 3 AND still failing:
+       - STOP and ASK FOR HELP
+       - Document: what was tried, error messages, hypothesis
+```
+
+#### Step 5: Validate & Commit (After Each Todo Item)
+- Run full project validation: `godot --headless --validate-project`
+- Run complete test suite
+- If all pass, **commit immediately** with descriptive message
+
+**Commit after every successfully completed todo item:**
+```bash
+git add .
+git commit -m "feat: <description of completed todo item>"
+```
+
+**Commit Message Types:**
+- `feat:` - New feature or functionality
+- `fix:` - Bug fix
+- `refactor:` - Code restructuring
+- `test:` - Adding/updating tests
+- `docs:` - Documentation changes
+- `config:` - Configuration changes
+
+#### Step 6: Push at End of Session
+After completing all todo items (or at end of work session):
+```bash
+git push origin <branch-name>
+```
+
+**Push Checklist:**
+- [ ] All todo items completed or documented as blocked
+- [ ] All tests pass
+- [ ] Project validates
+- [ ] context.md updated with changes
+- [ ] No uncommitted changes remaining
+
+### When to Ask for Help
+
+**After 3 Failed Attempts:**
+- Same test keeps failing despite different fixes
+- Unclear or cryptic error messages
+- Potential architecture issue discovered
+- Circular dependency or design flaw
+
+**Before Significant Decisions:**
+- Adding new dependencies or addons
+- Changing core architecture or base classes
+- Modifying shared systems (GameManager, etc.)
+- Deviating from SPEC.md requirements
+- Any change affecting multiple interconnected systems
+- Uncertain about the "right" approach among several options
+
+### Format for Asking Help
+
+When stuck or facing a significant decision, use this format:
+
+```markdown
+## Issue Summary
+[1-2 sentence description of the problem or decision]
+
+## What I Tried (if applicable)
+1. Attempt 1: [approach] → [result]
+2. Attempt 2: [approach] → [result]
+3. Attempt 3: [approach] → [result]
+
+## Error/Failure Details
+[Exact error messages or unexpected behavior]
+
+## My Hypothesis
+[What I think might be wrong or which option seems best]
+
+## Question
+[Specific question or request for guidance]
+```
+
+### Test Organization
+
+```
+tests/
+├── unit/                    # Isolated component tests
+│   ├── test_player.gd       # Player mechanics
+│   ├── test_enemy.gd        # Enemy behavior
+│   └── test_bullet.gd       # Projectile system
+├── integration/             # Multi-component tests
+│   ├── test_combat.gd       # Player vs enemy interactions
+│   └── test_level.gd        # Level flow and win/lose
+└── gut_config.json          # GUT configuration (optional)
+```
+
+### Running Tests
+
+**All Tests:**
+```bash
+godot --headless -s addons/gut/gut_cmdln.gd
+```
+
+**Unit Tests Only:**
+```bash
+godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/unit
+```
+
+**Integration Tests Only:**
+```bash
+godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/integration
+```
+
+**Specific Test File:**
+```bash
+godot --headless -s addons/gut/gut_cmdln.gd -gtest=res://tests/unit/test_player.gd
+```
+
+**Visual Playtest (when behavior must be observed):**
+```bash
+godot ~/dev/spooky
+```
+- Document what to look for
+- Note pass/fail criteria before testing
+
+### Autonomous Loop Summary
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    START NEW SESSION                     │
+└─────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│  PRE-WORK CHECKLIST                                     │
+│  □ git status (clean?)                                  │
+│  □ godot --headless --validate-project (pass?)          │
+│  □ Run existing tests (pass?)                           │
+└─────────────────────────────────────────────────────────┘
+                          │
+              ┌───────────┴───────────┐
+              │ All checks pass?      │
+              └───────────┬───────────┘
+                    No    │    Yes
+                    │     │
+         ┌──────────┘     └──────────┐
+         ▼                           ▼
+┌─────────────────┐    ┌─────────────────────────────────┐
+│ FIX ISSUES      │    │  FOR EACH TODO ITEM:            │
+│ BEFORE          │    │  ┌─────────────────────────────┐│
+│ PROCEEDING      │    │  │ 1. Plan & identify files    ││
+└─────────────────┘    │  │ 2. Write tests (TDD)        ││
+                       │  │ 3. Implement                ││
+                       │  │ 4. Test loop (max 3 tries)  ││
+                       │  │ 5. Validate                 ││
+                       │  │ 6. COMMIT this todo item    ││
+                       │  └─────────────────────────────┘│
+                       └─────────────────────────────────┘
+                                      │
+                          ┌───────────┴───────────┐
+                          │ Tests pass?           │
+                          └───────────┬───────────┘
+                               No     │    Yes
+                               │      │
+                    ┌──────────┘      └──────────┐
+                    ▼                            ▼
+         ┌─────────────────────┐    ┌─────────────────────┐
+         │ Attempt < 3?        │    │ COMMIT TODO ITEM    │
+         └──────────┬──────────┘    │ git add . && commit │
+               Yes  │  No           │                     │
+               │    │               │ More todos?         │
+    ┌──────────┘    └──────────┐    │  Yes → Next todo    │
+    ▼                          ▼    │  No  → Step 6       │
+┌─────────────┐    ┌────────────────└─────────────────────┘
+│ FIX & RETRY │    │  ASK FOR HELP                       │
+└─────────────┘    │  - Document attempts                │
+                   │  - Include error messages           │
+                   │  - State hypothesis                 │
+                   │  - Ask specific question            │
+                   └─────────────────────────────────────┘
+                                      │
+                          ┌───────────┴───────────┐
+                          │ All todos complete?   │
+                          └───────────┬───────────┘
+                                      │ Yes
+                                      ▼
+                       ┌─────────────────────────────────┐
+                       │  END OF SESSION                 │
+                       │  □ Update context.md            │
+                       │  □ git push origin <branch>     │
+                       └─────────────────────────────────┘
+```
+
+### Key Principles
+
+1. **Always validate before and after** - Never skip pre-work checks
+2. **Test-driven development** - Write tests before implementation when possible
+3. **Small iterations** - Make incremental changes, test frequently
+4. **Commit after each todo** - Every completed todo item gets its own commit
+5. **Know when to stop** - 3 failed attempts = time to ask for help
+6. **Document decisions** - Before significant changes, ask for confirmation
+7. **Keep context updated** - After completing work, update context.md
+8. **Push at end of session** - Push all commits when work is complete

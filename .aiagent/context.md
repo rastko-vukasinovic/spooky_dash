@@ -1,18 +1,19 @@
 # Spooky Dash - Project Context
 
 ## Project Overview
-**Name:** Spooky Dash  
-**Type:** 2D Platformer Game  
-**Engine:** Godot 4.2.2  
-**Platform:** Linux (with Android support planned)  
+**Name:** Spooky Dash
+**Type:** 2D Platformer Game
+**Engine:** Godot 4.2.2
+**Platform:** Linux (with Android support planned)
 **Location:** `/home/rastko/dev/spooky`
 
 ## Game Concept
-A platformer game where the player must navigate through levels, avoid enemies, and defeat them using a projectile system. The game features:
-- A player character that can move left/right and jump
+A platformer shooter where the player navigates levels, avoids enemies, and defeats them using projectiles. Features:
+- Player character with movement, jumping, and shooting
 - Multiple enemy types (Skeleton, Zombie) with different stats
-- A bullet/projectile system for combat
-- Android export target
+- Bullet/projectile combat system
+- HP system with game over/win conditions
+- Demo level with platforms and enemies
 
 ## Project Structure
 
@@ -20,24 +21,45 @@ A platformer game where the player must navigate through levels, avoid enemies, 
 spooky/
 ├── .aiagent/                    # AI Agent documentation
 │   ├── Agents.md               # Agent index
-│   ├── context.md              # Full project context
+│   ├── context.md              # Full project context (this file)
 │   ├── instructions.md         # Development instructions
-│   └── workflows.md            # Development workflows
+│   └── workflows.md            # Development workflows + Autonomous Loop
 ├── project.godot               # Godot project configuration
-├── BUILD_GUIDE.md              # Setup and build instructions
-├── CHECKLIST_ANDROID.md        # Android setup checklist
-├── SPEC.md                     # Game specification
-├── TODO.md                     # Development tasks
-├── install_godot.sh            # Godot installation script
+├── addons/
+│   └── gut/                    # GUT testing framework
+├── tests/
+│   ├── unit/                   # Unit tests
+│   │   ├── test_player.gd
+│   │   ├── test_enemy.gd
+│   │   └── test_bullet.gd
+│   └── integration/            # Integration tests
 ├── scenes/
-│   └── main.tscn              # Main game scene
+│   ├── player.tscn             # Player scene with collision
+│   ├── bullet.tscn             # Bullet projectile scene
+│   ├── enemies/
+│   │   ├── skeleton.tscn       # Skeleton enemy scene
+│   │   └── zombie.tscn         # Zombie enemy scene
+│   ├── levels/
+│   │   └── level_01.tscn       # Demo level (main scene)
+│   └── ui/
+│       └── hud.tscn            # HUD with HP and messages
 ├── scripts/
-│   ├── player.gd              # Player controller (120 speed, 300 jump force, 800 gravity)
-│   ├── enemy.gd               # Base enemy class (40 speed, 1 HP)
-│   ├── bullet.gd              # Projectile script (300 speed, 1 damage)
-│   ├── skeleton.gd            # Skeleton enemy (60 speed, 1 HP) - extends enemy.gd
-│   └── zombie.gd              # Zombie enemy (30 speed, 2 HP) - extends enemy.gd
-└── art/                        # Graphics assets (empty)
+│   ├── player.gd               # Player controller
+│   ├── enemy.gd                # Base enemy class
+│   ├── bullet.gd               # Projectile script
+│   ├── skeleton.gd             # Skeleton enemy (extends enemy.gd)
+│   ├── zombie.gd               # Zombie enemy (extends enemy.gd)
+│   ├── game_manager.gd         # Game state management (Autoload)
+│   ├── level.gd                # Level script for win condition
+│   └── hud.gd                  # HUD controller
+├── art/
+│   ├── player_sprite.png       # Player sprite (needs import)
+│   ├── enemy_sprite.png        # Enemy sprite (needs import)
+│   └── referencesprite.png     # Reference sprite
+├── BUILD_GUIDE.md
+├── CHECKLIST_ANDROID.md
+├── SPEC.md
+└── TODO.md
 ```
 
 ## Game Scripts Details
@@ -47,45 +69,80 @@ spooky/
 - **Speed:** 120 pixels/sec
 - **Jump Force:** -300 (upward velocity)
 - **Gravity:** 800 pixels/sec²
-- **Controls:** move_left, move_right, jump input actions
+- **Max HP:** 3
+- **Fire Rate:** 0.4 seconds
+- **Controls:** move_left, move_right, jump, shoot
+- **Signals:** `hp_changed(new_hp)`, `died`
+- **Groups:** "player"
 
 ### enemy.gd (Base Class)
 - **Class:** CharacterBody2D
 - **Speed:** 40 pixels/sec (default)
 - **Health:** 1 HP (default)
-- **Method:** `take_damage(dmg)` - reduces HP and removes enemy if HP <= 0
+- **Gravity:** 800 pixels/sec²
+- **Damage:** 1 (dealt to player on contact)
+- **Behavior:** Patrol left/right, turn at walls
+- **Groups:** "enemies"
+- **Method:** `take_damage(dmg)` - reduces HP, calls `die()` if HP <= 0
 
 ### bullet.gd
 - **Class:** Area2D
 - **Speed:** 300 pixels/sec
 - **Damage:** 1
-- **Movement:** Travels horizontally
+- **Direction:** Set by player (1 = right, -1 = left)
+- **Lifetime:** 2 seconds
+- **Behavior:** Moves horizontally, damages enemies on contact, self-destructs
 
 ### skeleton.gd
 - Extends: enemy.gd
 - **Speed:** 60 pixels/sec
 - **Health:** 1 HP
-- **Role:** Faster, weaker enemy
+- **Role:** Fast, weak enemy
 
 ### zombie.gd
 - Extends: enemy.gd
 - **Speed:** 30 pixels/sec
 - **Health:** 2 HP
-- **Role:** Slower, stronger enemy
+- **Role:** Slow, durable enemy
+
+### game_manager.gd (Autoload)
+- **Signals:** `game_over`, `level_completed`, `hp_updated(hp)`
+- **Methods:** `register_player()`, `level_complete()`, `restart_level()`
+- **Behavior:** Tracks player HP, handles win/lose, pauses game
+
+### hud.gd
+- Displays HP counter
+- Shows "GAME OVER" or "LEVEL COMPLETE" messages
+- Connects to GameManager signals
 
 ## Godot Configuration
 
 ### project.godot Settings
 - **Game Name:** Spooky Dash
 - **Version:** 0.1.0
-- **Main Scene:** res://scenes/main.tscn
+- **Main Scene:** res://scenes/levels/level_01.tscn
 - **Engine Features:** 4.2, GL Rendering
 - **Physics Ticks:** 60 per second
 
-### Input Actions Defined
-- **move_left** - Arrow Left (KEY_LEFT), A key (KEY_A)
-- **move_right** - Arrow Right (KEY_RIGHT), D key (KEY_D)
-- **jump** - Spacebar (KEY_SPACE), W key (KEY_W)
+### Autoloads
+- **GameManager:** res://scripts/game_manager.gd
+
+### Input Actions
+| Action | Keys |
+|--------|------|
+| move_left | Arrow Left, A |
+| move_right | Arrow Right, D |
+| jump | Space, W |
+| shoot | Ctrl, Left Mouse |
+| restart | R |
+
+### Collision Layers
+| Layer | Name | Usage |
+|-------|------|-------|
+| 1 | Player | Player body |
+| 2 | Enemies | All enemy bodies |
+| 3 | Projectiles | Bullets |
+| 4 | Environment | Platforms, walls |
 
 ## Development Environment
 
@@ -94,7 +151,6 @@ spooky/
 - **Godot Path:** ~/.local/bin/godot
 - **Godot Version:** 4.2.2.stable.official.15073afe3
 - **Git:** Initialized (main branch)
-- **Git Commit:** dc61aa9 (Initial project setup)
 
 ### Running the Project
 **Open in Editor:**
@@ -102,7 +158,7 @@ spooky/
 godot -e ~/dev/spooky
 ```
 
-**Run Game (Headless):**
+**Run Game:**
 ```bash
 godot ~/dev/spooky
 ```
@@ -112,72 +168,72 @@ godot ~/dev/spooky
 cd ~/dev/spooky && godot --headless --validate-project
 ```
 
+**Run Tests (GUT):**
+```bash
+cd ~/dev/spooky && godot --headless -s addons/gut/gut_cmdln.gd
+```
+
 ## Current Status
 
-### Completed
-✓ Project renamed to "Spooky Dash"  
-✓ Godot 4.2.2 installed  
-✓ project.godot configuration file created  
-✓ Input actions configured (move_left, move_right, jump)  
-✓ Base scene structure (main.tscn with Player node)  
-✓ All GDScript files written (player, enemies, bullets)  
-✓ Git repository initialized
-✓ Initial commit created (dc61aa9)  
+### Completed (First Playable Demo)
+✓ Project structure and configuration
+✓ Player with movement, jumping, shooting, HP
+✓ Bullet system with enemy collision
+✓ Enemy base class with patrol AI
+✓ Skeleton and Zombie enemy types
+✓ Demo level (level_01) with platforms and enemies
+✓ GameManager autoload for state management
+✓ HUD with HP display and messages
+✓ Win condition (reach green zone)
+✓ Lose condition (HP depleted)
+✓ Restart functionality (R key)
+✓ Collision layers configured
+✓ GUT testing framework installed
+✓ Unit tests for player, enemy, bullet
+✓ Autonomous development loop documented in workflows.md
+
+### Using Placeholder Graphics
+- Player: Blue ColorRect
+- Skeleton: Light blue ColorRect
+- Zombie: Green ColorRect
+- Platforms: Brown ColorRect
+- Level end: Green transparent zone
 
 ### Not Yet Implemented
-- CollisionShape2D for physics bodies
-- Enemy sprite graphics
-- Player sprite graphics
-- Bullet collision detection with enemies
-- Enemy AI/movement logic
-- Enemy spawning system
-- Game UI/HUD (score, health, etc.)
+- Actual sprite graphics (need editor import)
+- Animations
 - Sound effects and music
-- Level design
+- Additional levels
+- Enemy spawner system
+- Score system
 - Android-specific configurations
 
 ## Known Issues
-- Input actions defined but physics colliders not yet added to scenes
-- Enemy and bullet scripts have no collision/damage implementation yet
-- No visual assets present (art/ folder is empty)
+- Sprite assets exist but need Godot editor import (using ColorRect placeholders)
+- GUT editor plugin disabled (can still run tests via command line)
+
+## How to Play
+1. Run `godot ~/dev/spooky` or open in editor
+2. **A/D or Arrows:** Move left/right
+3. **Space or W:** Jump
+4. **Left Mouse or Ctrl:** Shoot
+5. **R:** Restart level
+6. **Goal:** Reach the green zone on the right
+7. **Avoid:** Getting hit by enemies (3 HP)
 
 ## Dependencies
 - Godot 4.2.2 (installed)
-- Linux OS (system running on)
+- Linux OS
 - GDScript 2.0 (included with Godot)
-
-## Next Development Phases
-
-### Phase 1: Core Mechanics
-- Add CollisionShape2D nodes to player, enemies, bullets
-- Implement bullet collision detection
-- Implement damage system
-- Add basic enemy AI movement
-
-### Phase 2: Content
-- Create/import sprite graphics
-- Design level layout
-- Implement enemy spawning
-- Add background/platform graphics
-
-### Phase 3: Polish
-- Sound effects
-- UI/HUD system
-- Game manager/level controller
-- Animation system
-
-### Phase 4: Android Export
-- Configure Android export settings
-- Test on Android device
-- Optimize performance
-- Build APK
+- GUT 9.2.1 (installed in addons/)
 
 ## File Modification History
-- Game renamed from "Slingshot Boy" to "Spooky Dash"
-- SPEC.md, TODO.md, CHECKLIST_ANDROID.md updated with new title
-- project.godot created with full configuration
-- install_godot.sh created for automated setup
-- BUILD_GUIDE.md created with setup instructions
-- Input actions added to project.godot
-- .aiagent/ directory created with complete agent documentation
-- Git repository initialized with initial commit (dc61aa9)
+- Initial project setup with scripts
+- Added collision layers and input actions
+- Created player, bullet, enemy scenes
+- Created level_01 with platforms and enemies
+- Added GameManager autoload and HUD
+- Installed GUT testing framework
+- Added unit tests
+- Added autonomous development loop to workflows.md
+- Switched to ColorRect placeholders for immediate playability
