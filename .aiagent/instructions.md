@@ -176,6 +176,26 @@ git log --graph --all --decorate
 # View differences
 git diff
 git diff <filename>
+
+# View remotes
+git remote
+git remote -v
+git remote show <remote-name>
+```
+
+#### Remote Management
+```bash
+# Add remote repository
+git remote add <name> <url>
+
+# Remove remote
+git remote remove <name>
+
+# Rename remote
+git remote rename <old-name> <new-name>
+
+# Change remote URL
+git remote set-url <name> <new-url>
 ```
 
 #### Staging & Committing
@@ -208,6 +228,9 @@ git branch <branch-name>
 git branch
 git branch -a
 
+# Rename current branch
+git branch -M <new-name>
+
 # Switch branch
 git checkout <branch-name>
 
@@ -219,6 +242,10 @@ git branch -d <branch-name>
 
 # Delete branch (force)
 git branch -D <branch-name>
+
+# Set upstream branch
+git branch --set-upstream-to=<upstream> [<branch>]
+git branch -u <upstream> [<branch>]
 ```
 
 #### Undoing Changes
@@ -236,7 +263,7 @@ git reset --soft HEAD~1
 git reset --hard HEAD~1
 ```
 
-#### Information
+#### Information & Configuration
 ```bash
 # Show commit details
 git show <commit-hash>
@@ -246,6 +273,13 @@ git log -- <filename>
 
 # Show who changed each line
 git blame <filename>
+
+# View git configuration
+git config --list
+
+# Set configuration
+git config --global <key> <value>
+git config <key> <value>
 ```
 
 ### Commit Message Guidelines
