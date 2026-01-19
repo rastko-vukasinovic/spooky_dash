@@ -14,6 +14,7 @@ var can_shoot := true
 var facing_right := true
 
 @onready var shoot_origin: Marker2D = $ShootOrigin
+@onready var sprite: Sprite2D = $Sprite2D
 
 const BULLET_SCENE = preload("res://scenes/bullet.tscn")
 
@@ -34,7 +35,8 @@ func _physics_process(delta):
 	# Update facing direction
 	if dir != 0:
 		facing_right = dir > 0
-		shoot_origin.position.x = 12 if facing_right else -12
+		sprite.flip_h = not facing_right
+		shoot_origin.position.x = 16 if facing_right else -16
 
 	# Jump
 	if is_on_floor() and Input.is_action_just_pressed("jump"):

@@ -1,25 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://bx8qk2nvyh1rt"]
+[gd_scene load_steps=4 format=3 uid="uid://bx8qk2nvyh1rt"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Texture2D" path="res://art/sprites/player_idle.png" id="2_sprite"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_player"]
-radius = 6.0
-height = 24.0
+radius = 8.0
+height = 32.0
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 1
-collision_mask = 6
+collision_mask = 10
 script = ExtResource("1_player")
 
-[node name="Sprite2D" type="ColorRect" parent="."]
-offset_left = -8.0
-offset_top = -16.0
-offset_right = 8.0
-offset_bottom = 16.0
-color = Color(0.2, 0.6, 1, 1)
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_sprite")
+hframes = 4
+frame = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_player")
 
 [node name="ShootOrigin" type="Marker2D" parent="."]
-position = Vector2(12, 0)
+position = Vector2(16, 0)
