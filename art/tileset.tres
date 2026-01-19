@@ -1,0 +1,8 @@
+[gd_resource type="TileSet" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://art/tiles/terrain.png" id="1_terrain"]
+[ext_resource type="Texture2D" path="res://art/tiles/blocks.png" id="2_blocks"]
+
+[resource]
+tile_size = Vector2i(16, 16)
+

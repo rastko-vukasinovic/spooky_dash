@@ -53,8 +53,33 @@ spooky/
 │   ├── level.gd                # Level script for win condition
 │   └── hud.gd                  # HUD controller
 ├── art/
-│   ├── player_sprite.png       # Player sprite (needs import)
-│   ├── enemy_sprite.png        # Enemy sprite (needs import)
+│   ├── sprites/                # Character and object sprites
+│   │   ├── player_idle.png     # Player idle (32x32, 4 frames)
+│   │   ├── player_run.png      # Player run animation
+│   │   ├── player_jump.png     # Player jump
+│   │   ├── player_hurt.png     # Player hurt
+│   │   ├── player_shoot.png    # Player shooting
+│   │   ├── skeleton_idle.png   # Skeleton idle (16x16)
+│   │   ├── skeleton_run.png    # Skeleton run animation
+│   │   ├── skeleton_hurt.png   # Skeleton hurt
+│   │   ├── zombie_idle.png     # Zombie idle (16x16, 2 frames)
+│   │   ├── zombie_run.png      # Zombie run animation
+│   │   ├── zombie_hurt.png     # Zombie hurt
+│   │   ├── bullet.png          # Bullet sprite (4 frames)
+│   │   ├── coin.png            # Collectible coin
+│   │   ├── dust.png            # Dust particles
+│   │   └── poof.png            # Poof effect
+│   ├── tiles/                  # Tileset images
+│   │   ├── terrain.png         # Main terrain (grass/dirt, 16x16 tiles)
+│   │   ├── blocks.png          # Decorative blocks
+│   │   └── entities.png        # Entity tiles
+│   ├── backgrounds/            # Background layers
+│   │   ├── sky.png             # Sky background
+│   │   ├── clouds_far.png      # Far clouds (parallax)
+│   │   ├── clouds_near.png     # Near clouds (parallax)
+│   │   ├── hills.png           # Hills layer
+│   │   └── foreground.png      # Foreground elements
+│   ├── CREDITS.md              # Art asset credits
 │   └── referencesprite.png     # Reference sprite
 ├── BUILD_GUIDE.md
 ├── CHECKLIST_ANDROID.md
@@ -192,24 +217,25 @@ cd ~/dev/spooky && godot --headless -s addons/gut/gut_cmdln.gd
 ✓ Unit tests for player, enemy, bullet
 ✓ Autonomous development loop documented in workflows.md
 
-### Using Placeholder Graphics
-- Player: Blue ColorRect
-- Skeleton: Light blue ColorRect
-- Zombie: Green ColorRect
-- Platforms: Brown ColorRect
-- Level end: Green transparent zone
+### Graphics (World of Alpheratz Assets)
+- Player: LilWiz sprites (32x32, idle/run/jump/hurt/shoot)
+- Skeleton: Devo sprites (16x16, idle/run/hurt)
+- Zombie: Bub sprites (16x16, idle/run/hurt)
+- Bullet: Magical orb sprite (4 frames)
+- Terrain: Grass/dirt tileset (16x16 tiles)
+- Background: Sky with optional parallax layers
+- Level end: Green transparent zone (placeholder)
 
 ### Not Yet Implemented
-- Actual sprite graphics (need editor import)
-- Animations
+- Sprite animations (assets ready, need AnimatedSprite2D)
 - Sound effects and music
 - Additional levels
 - Enemy spawner system
 - Score system
+- Parallax background layers
 - Android-specific configurations
 
 ## Known Issues
-- Sprite assets exist but need Godot editor import (using ColorRect placeholders)
 - GUT editor plugin disabled (can still run tests via command line)
 
 ## How to Play
@@ -236,4 +262,11 @@ cd ~/dev/spooky && godot --headless -s addons/gut/gut_cmdln.gd
 - Installed GUT testing framework
 - Added unit tests
 - Added autonomous development loop to workflows.md
-- Switched to ColorRect placeholders for immediate playability
+- Imported World of Alpheratz art assets (sprites, tiles, backgrounds)
+- Updated player, skeleton, zombie, bullet scenes to use sprite textures
+- Updated level_01 to use terrain tileset and sky background
+
+## Art Credits
+All sprite and tile assets from **World of Alpheratz** project:
+- Source: https://github.com/Ark2000/world_of_alpheratz
+- See art/CREDITS.md for full attribution
